@@ -37,12 +37,35 @@ AI да имплементира по нея.
 
 ## Структура на проекта
 
+Демо приложението е **регистър на времето (timesheet)** — ASP.NET Core Minimal API + Blazor WebAssembly на .NET 10.
+
 ```
-specs/     # спецификациите — по един .md файл за всяка
-  template.md   # шаблон, от който започва всяка нова спецификация
-  <feature>.md
-src/       # имплементация, генерирана по спецификациите
+specs/                    # спецификациите — по един .md файл за всяка
+  template.md             # шаблон, от който започва всяка нова спецификация
+  000-solution-setup.md   # как е създаден и конфигуриран solution-ът
+src/
+  Timesheet.Api/          # Minimal API, EF Core InMemory
+  Timesheet.Web/          # Blazor WebAssembly UI
+  Timesheet.Shared/       # общи DTO-та за API и UI
+tests/
+  Timesheet.Api.Tests/    # xUnit тестове
+Timesheet.sln
+run.sh / run.ps1          # пускат API и UI заедно
 ```
+
+## Стартиране
+
+Нужен е .NET SDK 10. Един скрипт билдва и пуска двата проекта, а Ctrl+C ги спира:
+
+```bash
+./run.sh        # macOS / Linux
+./run.ps1       # Windows (PowerShell 7)
+```
+
+- API: http://localhost:5100
+- UI: http://localhost:5200
+
+Тестове: `dotnet test`.
 
 ## Инструменти
 
