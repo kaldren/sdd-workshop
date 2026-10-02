@@ -18,6 +18,8 @@ Timesheet POC: users log the hours they spend on projects.
 <!-- Защо: това е сърцето на SDD. Без тези правила AI пише код по догадки, а не по договор. -->
 
 1. No code without a spec. Every change starts from a file in `specs/`.
+   - A new spec is a copy of `specs/template.md` with the same sections in the same order.
+   - File name: `specs/NNN-<kebab-case-name>.md`, where `NNN` is the next free number (`001`, `002`…). Numbers are never reused or changed.
 2. Implement only specs with `**Status:** Ready for implementation`. `Draft` means a human has not approved it yet.
 3. If the spec is wrong, unclear or incomplete — stop and propose a change to the spec. Fix the spec first, then the code.
 4. Do nothing listed in **Out of scope**, and nothing the spec does not ask for.
@@ -30,8 +32,8 @@ Timesheet POC: users log the hours they spend on projects.
 | --- | --- |
 | `specs/NNN-*.md` | **What** we build (`specs/template.md` is the template, not a spec) |
 | `DESIGN.md` | **How it looks** — the design system for every UI change |
-| `.claude/agents/` | **Who** does the work — `backend-agent`, `frontend-agent` |
-| `.claude/skills/` | **How** we work — `/spec` (idea → spec), `/implement` (spec → code) |
+| `.claude/agents/` | **Who** does the work — `@spec-agent` (idea → spec), `backend-agent`, `frontend-agent` |
+| `.claude/skills/` | **How** we work — `/implement` (spec → code) |
 
 ## Conventions
 

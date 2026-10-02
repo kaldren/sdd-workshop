@@ -1,7 +1,7 @@
 # <Feature name>
 
 <!--
-Spec template. Copy this file to specs/<feature>.md and fill in every section.
+Spec template. Copy this file to specs/NNN-<feature>.md (NNN = next free number: 001, 002...) and fill in every section.
 Comments like this one can be removed.
 This file is NOT a spec and must not be implemented.
 -->

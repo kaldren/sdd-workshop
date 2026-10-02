@@ -11,7 +11,7 @@ AI да имплементира по нея.
 
 ## Процесът
 
-1. **Пишем spec** — `/spec <идея>` създава нов файл в `specs/` от шаблона, със статус `Draft`.
+1. **Пишем spec** — `@spec-agent <идея>` вика `spec-agent`, който първо пита за неясното, после създава нов файл в `specs/` по шаблона, със статус `Draft`.
 2. **Човек одобрява** — преглеждаме spec-а и сменяме статуса на `Ready for implementation`.
 3. **AI имплементира** — `/implement specs/NNN-*.md` дава задачите на `backend-agent` и `frontend-agent`.
 4. **Проверяваме** — build, тестове и Acceptance criteria от спецификацията; статусът става `Implemented`.
@@ -25,10 +25,25 @@ AI да имплементира по нея.
 | Файл | Роля | Кога се чете |
 | --- | --- | --- |
 | `CLAUDE.md` | Правилата на проекта и на SDD процеса | Автоматично, във всяка сесия |
-| `specs/NNN-*.md` | **Какво** правим | При `/spec` и `/implement` |
+| `specs/NNN-*.md` | **Какво** правим | От `spec-agent` и при `/implement` |
 | `DESIGN.md` | **Как изглежда** — цветове, шрифтове, компоненти | От `frontend-agent`, преди всеки UI |
-| `.claude/agents/` | **Кой** работи — `backend-agent`, `frontend-agent` | Когато `/implement` им даде задачи |
-| `.claude/skills/` | **Как** работим — `/spec`, `/implement` | Когато извикаме командата |
+| `.claude/agents/` | **Кой** работи — `spec-agent`, `backend-agent`, `frontend-agent` | Когато ги извикаме с `@` или `/implement` им даде задача |
+| `.claude/skills/` | **Как** работим — `/implement` | Когато извикаме командата |
+
+## Агенти
+
+Всеки агент има една роля и пипа само своята част от проекта. `spec-agent` викаме директно с `@`, а другите два ги пуска командата `/implement`.
+
+| Агент | Роля | Може да променя | Пуска го | Връща |
+| --- | --- | --- | --- | --- |
+| [`spec-agent`](.claude/agents/spec-agent.md) | Анализатор: идея → спецификация. Първо задава въпроси за неясното, после пише spec-а по `specs/template.md`. Няма достъп до терминала и не пише код. | само `specs/` | `@spec-agent <идея>` | Нов spec със статус `Draft` + допусканията, които човек трябва да провери |
+| [`backend-agent`](.claude/agents/backend-agent.md) | Backend разработчик: изпълнява `[backend]` задачите — endpoint-и, данни, DTO-та, тестове с номера на изискванията (`R1_…`). | `Timesheet.Api`, `Timesheet.Shared`, `Timesheet.Api.Tests` | `/implement` | Минаващи build и тестове + кои `R` са покрити |
+| [`frontend-agent`](.claude/agents/frontend-agent.md) | Frontend разработчик: изпълнява `[frontend]` задачите, като следва `DESIGN.md` буквално (loading / empty / error за всеки екран). | `Timesheet.Web` | `/implement`, след backend-а | Минаващ build + стъпки за ръчна проверка в браузъра |
+
+Как се викат:
+
+- **`@spec-agent <идея>`** — пишем `@` в Claude Code и избираме агента. Той връща въпросите си, главната сесия ни ги задава и му връща отговорите, после агентът пише spec-а.
+- [**`/implement <spec>`**](.claude/skills/implement/SKILL.md) — команда (skill), която организира няколко агента. Пуска се само за spec със статус `Ready for implementation`. Дава задачите на `backend-agent`, после на `frontend-agent`, проверява Acceptance criteria и сменя статуса на `Implemented`.
 
 ## Какво съдържа една спецификация
 
@@ -56,8 +71,8 @@ AI да имплементира по нея.
 CLAUDE.md                 # правилата за AI — зарежда се автоматично
 DESIGN.md                 # дизайн системата на UI-а
 .claude/
-  agents/                 # backend-agent.md, frontend-agent.md
-  skills/                 # spec/SKILL.md, implement/SKILL.md
+  agents/                 # spec-agent.md, backend-agent.md, frontend-agent.md
+  skills/                 # implement/SKILL.md
 specs/                    # спецификациите — по един .md файл за всяка
   template.md             # шаблон, от който започва всяка нова спецификация
   000-solution-setup.md   # как е създаден и конфигуриран solution-ът
