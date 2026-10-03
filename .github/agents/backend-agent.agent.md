@@ -1,7 +1,7 @@
 ---
 name: backend-agent
 description: Implements the [backend] tasks of a spec in Timesheet.Api, Timesheet.Shared and Timesheet.Api.Tests. Used by /implement with the spec path and the tasks to do.
-tools: ['read', 'search', 'edit', 'execute', 'todos']
+tools: ['read', 'search', 'edit', 'execute', 'todo']
 ---
 
 <!-- Защо: отделен агент с тясна роля. Той работи само по backend-а, получава само своите задачи и не пипа UI-а. -->

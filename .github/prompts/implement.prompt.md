@@ -3,7 +3,7 @@ name: implement
 description: Implements an approved spec by delegating to backend-agent and frontend-agent, then verifies it against its Acceptance criteria.
 argument-hint: Path to the spec, e.g. specs/001-time-entries.md
 agent: agent
-tools: ['agent', 'read', 'search', 'edit', 'execute', 'todos']
+tools: ['agent', 'read', 'search', 'edit', 'execute', 'todo']
 ---
 
 <!-- Защо: стъпки 2 и 3 от процеса — имплементация и проверка. Главният агент координира, специализираните агенти пишат кода, а spec-ът е мярката за „готово“. -->
