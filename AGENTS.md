@@ -33,7 +33,7 @@ Timesheet POC: users log the hours they spend on projects.
 | `specs/NNN-*.md` | **What** we build (`specs/template.md` is the template, not a spec) |
 | `DESIGN.md` | **How it looks** — the design system for every UI change |
 | `.github/agents/` | **Who** does the work — `spec-agent` (idea → spec), `backend-agent`, `frontend-agent` |
-| `.github/prompts/` | **How** we work — `/implement` (spec → code) |
+| `.github/skills/` | **How** we work — `/implement` Agent Skill (spec → code) |
 | `.github/instructions/` | Rules for specific folders, e.g. UI rules for `src/Timesheet.Web` |
 
 ## Conventions
@@ -41,3 +41,9 @@ Timesheet POC: users log the hours they spend on projects.
 - DTOs are `record`s in `Timesheet.Shared`; Api and Web never define their own copies.
 - API endpoints are grouped per feature; UI follows `DESIGN.md` exactly.
 - No new NuGet packages or UI libraries unless the spec says so.
+
+The directory scopes in custom-agent files are behavioral instructions, not filesystem access controls. Tool allowlists restrict tool categories, not individual paths; review tool activity and diffs before accepting changes.
+
+## Setup-only template exceptions
+
+The artifacts owned by `specs/000-solution-setup.md` are an end-to-end template smoke check, not patterns for later business features. Its existing inline `/weatherforecast` endpoint, Api/Web `WeatherForecast` transport types, empty `UnitTest1`, and Weather page without empty/error states are allowed only while they remain unchanged setup scaffolding. Any later spec that changes or replaces them must follow the conventions above and `DESIGN.md` in full.

@@ -13,7 +13,7 @@ AI да имплементира по нея.
 
 1. **Пишем spec** — избираме `spec-agent` в Copilot Chat и описваме идеята. Агентът първо пита за неясното, после създава нов файл в `specs/` по шаблона, със статус `Draft`.
 2. **Човек одобрява** — преглеждаме spec-а и сменяме статуса на `Ready for implementation`.
-3. **AI имплементира** — `/implement specs/NNN-*.md` дава задачите на `backend-agent` и `frontend-agent`.
+3. **AI имплементира** — Agent Skill-ът `/implement specs/NNN-*.md` дава задачите на `backend-agent` и `frontend-agent`.
 4. **Проверяваме** — build, тестове и Acceptance criteria от спецификацията; статусът става `Implemented`.
 
 Ако нещо не е както трябва — **първо поправяме spec-а, после кода**.
@@ -28,12 +28,14 @@ AI да имплементира по нея.
 | `specs/NNN-*.md` | **Какво** правим | От `spec-agent` и при `/implement` |
 | `DESIGN.md` | **Как изглежда** — цветове, шрифтове, компоненти | От `frontend-agent`, преди всеки UI |
 | `.github/agents/` | **Кой** работи — `spec-agent`, `backend-agent`, `frontend-agent` | Когато изберем агента в чата или `/implement` му даде задача |
-| `.github/prompts/` | **Как** работим — `/implement` | Когато напишем `/implement` в чата |
+| `.github/skills/` | **Как** работим — Agent Skill-ът `/implement` | Когато напишем `/implement` в чата |
 | `.github/instructions/` | Правила за конкретна папка — UI правилата за `src/Timesheet.Web` | Автоматично, когато AI пипа файл в тази папка |
 
 ## Агенти
 
 Всеки агент има една роля и пипа само своята част от проекта. `spec-agent` избираме директно в чата, а другите два ги пуска командата `/implement`.
+
+Границите по директории са инструкции към агентите, а не filesystem ACL. Tool allowlist-ът ограничава видовете инструменти, но `edit` не може технически да се свие до конкретна папка. Затова преглеждаме tool activity и diff-а преди да приемем промяната.
 
 | Агент | Роля | Може да променя | Пуска го | Връща |
 | --- | --- | --- | --- | --- |
@@ -44,7 +46,7 @@ AI да имплементира по нея.
 Как се викат:
 
 - **`spec-agent`** — в Copilot Chat (режим Agent) избираме `spec-agent` от падащото меню с агенти и описваме идеята. Агентът задава въпросите си директно в чата, после пише spec-а.
-- [**`/implement <spec>`**](.github/prompts/implement.prompt.md) — команда (prompt file), която организира няколко агента като subagents. Пуска се само за spec със статус `Ready for implementation`. Дава задачите на `backend-agent`, после на `frontend-agent`, проверява Acceptance criteria и сменя статуса на `Implemented`.
+- [**`/implement <spec>`**](.github/skills/implement/SKILL.md) — Agent Skill, който организира няколко агента като subagents. Пуска се само за spec със статус `Ready for implementation`. Дава задачите на `backend-agent`, после на `frontend-agent`, проверява Acceptance criteria и сменя статуса на `Implemented`.
 
 ## Какво съдържа една спецификация
 
@@ -73,7 +75,8 @@ AGENTS.md                 # правилата за AI — зарежда се �
 DESIGN.md                 # дизайн системата на UI-а
 .github/
   agents/                 # spec-agent, backend-agent, frontend-agent (*.agent.md)
-  prompts/                # implement.prompt.md — командата /implement
+  skills/
+    implement/SKILL.md    # Agent Skill-ът /implement
   instructions/           # frontend.instructions.md — UI правила за src/Timesheet.Web
 specs/                    # спецификациите — по един .md файл за всяка
   template.md             # шаблон, от който започва всяка нова спецификация

@@ -2,6 +2,8 @@
 name: frontend-agent
 description: Implements the [frontend] tasks of a spec in Timesheet.Web, following DESIGN.md. Used by /implement after the backend is done, with the spec path and the tasks to do.
 tools: ['read', 'search', 'edit', 'execute', 'todo']
+include-custom-instructions: true
+user-invocable: false
 ---
 
 <!-- Защо: frontend агентът е задължен да следва DESIGN.md. Така всеки екран изглежда като част от едно и също приложение, независимо кой го е генерирал. -->

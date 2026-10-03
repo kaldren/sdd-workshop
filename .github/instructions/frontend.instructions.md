@@ -9,3 +9,4 @@ applyTo: 'src/Timesheet.Web/**'
 - Follow `DESIGN.md` exactly: only its color tokens, typography, Bootstrap classes and component rules.
 - Every page that loads data has loading, empty and error states.
 - No inline styles, no hardcoded colors, no new UI libraries.
+- Setup-only exception: the unchanged template `Pages/Weather.razor` owned by `specs/000-solution-setup.md` is a smoke-check scaffold. Any later spec that changes or replaces it must apply all rules above.

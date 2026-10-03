@@ -1,6 +1,6 @@
 # Solution setup
 
-**Status:** Implemented
+**Status:** Ready for implementation
 
 ## Goal
 
@@ -42,6 +42,7 @@ A base .NET solution for the timesheet POC: a Minimal API, a Blazor WebAssembly 
 - [x] Given the Api runs in Development, when `GET http://localhost:5100/openapi/v1.json` is called, then it returns the OpenAPI document.
 - [x] Given a request with `Origin: http://localhost:5200`, when the Api responds, then the response contains `Access-Control-Allow-Origin: http://localhost:5200`.
 - [x] Given the repo root, when `./run.sh` (or `./run.ps1`) runs, then both `http://localhost:5100/weatherforecast` and `http://localhost:5200/` respond with 200.
+- [ ] Given Windows with PowerShell 7, when `./run.ps1` runs, then both `http://localhost:5100/weatherforecast` and `http://localhost:5200/` respond with 200 and Ctrl+C stops both processes.
 - [x] Given both projects were started with the script, when Ctrl+C is pressed, then nothing is listening on ports 5100 and 5200 anymore.
 - [x] Given a broken build, when the script runs, then it exits with a non-zero code and starts nothing.
 - [ ] Given Api and Web are both running, when the Weather page in the Web is opened, then it shows the forecast from the Api with no errors in the browser console.
@@ -145,4 +146,4 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseU
 - [x] `ApiBaseUrl` and `HttpClient` in the Web (R5)
 - [x] Point the Weather page to the Api and delete `sample-data` (R7)
 - [x] Start scripts `run.sh` and `run.ps1` (R9)
-- [x] Check every Acceptance criterion
+- [ ] Check every Acceptance criterion
