@@ -60,6 +60,7 @@ Style: corporate blue, clean and calm — a business tool, not a marketing page.
 
 - Dark blue sidebar (`--color-primary`) with white nav text; content area on `--color-surface`.
 - Content max-width 1200px. Each page: h1 title → optional short description → content.
+- At 641px and above, the sidebar is fixed to the left edge at full height and content fills the remaining width. Below 641px, the sidebar is hidden behind a top-bar hamburger menu.
 - At most **one** primary button per screen; other actions are `btn-outline-primary` or links.
 
 ## Components

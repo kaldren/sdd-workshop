@@ -80,6 +80,16 @@ a,
     color: var(--color-danger);
 }
 
+@media (max-width: 640px) {
+    .time-entry-submit {
+        width: 100%;
+    }
+
+    .table-responsive > .table {
+        min-width: 40rem;
+    }
+}
+
 #blazor-error-ui {
     color: var(--color-background);
     background-color: var(--color-danger);

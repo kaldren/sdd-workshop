@@ -2,11 +2,13 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 main {
     min-width: 0;
     flex: 1;
+    width: 100%;
 }
 
 .sidebar {
@@ -21,14 +23,21 @@ main {
 
 @media (min-width: 641px) {
     .page {
-        flex-direction: row;
+        display: block;
     }
 
     .sidebar {
         width: 250px;
-        min-height: 100vh;
-        flex-shrink: 0;
-        position: sticky;
+        height: 100vh;
+        position: fixed;
         top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+
+    main {
+        margin-left: 250px;
+        width: auto;
     }
 }
