@@ -1,0 +1,285 @@
+@page "/time-entries"
+@using System.ComponentModel.DataAnnotations
+@using System.Net
+@using System.Text.Json
+@using Timesheet.Shared
+@inject HttpClient Http
+
+<PageTitle>Time entries</PageTitle>
+
+<h1>Time entries</h1>
+<p>Record the time you spend on a project and review your entries.</p>
+
+<section class="card shadow-sm mb-4" aria-labelledby="create-entry-heading">
+    <div class="card-body">
+        <h2 id="create-entry-heading" class="card-title">Add a time entry</h2>
+
+        @if (!string.IsNullOrEmpty(submitError))
+        {
+            <div class="alert alert-danger" role="alert">@submitError</div>
+        }
+
+        <EditForm EditContext="@editContext" OnValidSubmit="CreateEntryAsync">
+            <DataAnnotationsValidator />
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label for="entry-date" class="form-label">Date *</label>
+                    <InputDate id="entry-date" class="form-control" @bind-Value="form.Date" />
+                    <ValidationMessage For="@(() => form.Date)" class="invalid-feedback d-block" />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="entry-project" class="form-label">Project *</label>
+                    <InputText id="entry-project" class="form-control" @bind-Value="form.Project" />
+                    <ValidationMessage For="@(() => form.Project)" class="invalid-feedback d-block" />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="entry-hours" class="form-label">Hours *</label>
+                    <InputNumber id="entry-hours" class="form-control" @bind-Value="form.Hours" min="0" max="24" step="any" />
+                    <ValidationMessage For="@(() => form.Hours)" class="invalid-feedback d-block" />
+                </div>
+                <div class="col-12">
+                    <label for="entry-description" class="form-label">Description</label>
+                    <InputTextArea id="entry-description" class="form-control" @bind-Value="form.Description" />
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>Add time entry</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</section>
+
+<section aria-labelledby="entries-heading">
+    <h2 id="entries-heading">Recorded entries</h2>
+
+    @if (isLoading)
+    {
+        <div class="d-flex align-items-center gap-2" role="status">
+            <span class="spinner-border text-primary" aria-hidden="true"></span>
+            <span>Loading time entries...</span>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(loadError))
+    {
+        <div class="alert alert-danger" role="alert">@loadError</div>
+    }
+    else if (entries is { Count: 0 })
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <p class="mb-0">No time entries yet. Use the form above to add your first entry.</p>
+            </div>
+        </div>
+    }
+    else if (entries is not null)
+    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Project</th>
+                            <th scope="col" class="text-end">Hours</th>
+                            <th scope="col">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in entries)
+                        {
+                            <tr>
+                                <td class="tabular-numbers">@entry.Date.ToString("yyyy-MM-dd")</td>
+                                <td>@entry.Project</td>
+                                <td class="text-end tabular-numbers">@entry.Hours.ToString("0.##")</td>
+                                <td>@entry.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    private List<TimeEntryResponse>? entries;
+    private TimeEntryForm form = new();
+    private EditContext editContext = default!;
+    private ValidationMessageStore serverValidationMessages = default!;
+    private bool isLoading = true;
+    private bool isSubmitting;
+    private string? loadError;
+    private string? submitError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetupEditContext();
+        await LoadEntriesAsync();
+    }
+
+    private async Task LoadEntriesAsync()
+    {
+        isLoading = true;
+        loadError = null;
+
+        try
+        {
+            entries = await Http.GetFromJsonAsync<List<TimeEntryResponse>>("api/time-entries");
+            entries ??= [];
+        }
+        catch (HttpRequestException)
+        {
+            loadError = "Time entries could not be loaded. Please try again.";
+        }
+        catch (JsonException)
+        {
+            loadError = "The time entries response could not be read. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CreateEntryAsync()
+    {
+        isSubmitting = true;
+        submitError = null;
+        serverValidationMessages.Clear();
+        editContext.NotifyValidationStateChanged();
+
+        try
+        {
+            var request = new CreateTimeEntryRequest(
+                form.Date,
+                string.IsNullOrWhiteSpace(form.Project) ? null : form.Project.Trim(),
+                form.Hours,
+                string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim());
+
+            using var response = await Http.PostAsJsonAsync("api/time-entries", request);
+            if (response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                await ReadValidationErrorsAsync(response);
+                return;
+            }
+
+            response.EnsureSuccessStatusCode();
+            var createdEntry = await response.Content.ReadFromJsonAsync<TimeEntryResponse>()
+                ?? throw new JsonException("The created time entry response was empty.");
+
+            entries ??= [];
+            entries.Add(createdEntry);
+            entries = entries.OrderBy(entry => entry.Date).ThenBy(entry => entry.Id).ToList();
+            loadError = null;
+            form = new TimeEntryForm();
+            SetupEditContext();
+        }
+        catch (HttpRequestException)
+        {
+            submitError = "The time entry could not be saved. Please try again.";
+        }
+        catch (JsonException)
+        {
+            submitError = "The server response could not be read. Please try again.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task ReadValidationErrorsAsync(HttpResponseMessage response)
+    {
+        try
+        {
+            using var document = await JsonDocument.ParseAsync(
+                await response.Content.ReadAsStreamAsync());
+
+            if (!document.RootElement.TryGetProperty("errors", out var errors)
+                || errors.ValueKind != JsonValueKind.Object)
+            {
+                submitError = "The time entry was rejected. Please check the values and try again.";
+                return;
+            }
+
+            var foundFieldError = false;
+            foreach (var fieldError in errors.EnumerateObject())
+            {
+                var field = fieldError.Name.ToLowerInvariant() switch
+                {
+                    "date" => nameof(TimeEntryForm.Date),
+                    "project" => nameof(TimeEntryForm.Project),
+                    "hours" => nameof(TimeEntryForm.Hours),
+                    _ => null
+                };
+
+                if (field is null || fieldError.Value.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (var message in fieldError.Value.EnumerateArray())
+                {
+                    if (message.ValueKind == JsonValueKind.String && message.GetString() is { } text)
+                    {
+                        serverValidationMessages.Add(new FieldIdentifier(form, field), text);
+                        foundFieldError = true;
+                    }
+                }
+            }
+
+            if (!foundFieldError)
+            {
+                submitError = "The time entry was rejected. Please check the values and try again.";
+            }
+
+            editContext.NotifyValidationStateChanged();
+        }
+        catch (JsonException)
+        {
+            submitError = "The time entry was rejected. Please check the values and try again.";
+        }
+    }
+
+    private void SetupEditContext()
+    {
+        editContext = new EditContext(form);
+        serverValidationMessages = new ValidationMessageStore(editContext);
+        editContext.OnFieldChanged += ClearServerValidationForField;
+    }
+
+    private void ClearServerValidationForField(object? sender, FieldChangedEventArgs args)
+    {
+        serverValidationMessages.Clear(args.FieldIdentifier);
+        submitError = null;
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private sealed class TimeEntryForm
+    {
+        [Required(ErrorMessage = "Date is required.")]
+        public DateOnly? Date { get; set; }
+
+        [Required(ErrorMessage = "Project is required.")]
+        public string? Project { get; set; }
+
+        [Required(ErrorMessage = "Hours are required.")]
+        [Range(typeof(decimal), "0.0000000000000000000000000001", "24",
+            ErrorMessage = "Hours must be greater than 0 and no more than 24.")]
+        public decimal? Hours { get; set; }
+
+        public string? Description { get; set; }
+    }
+}

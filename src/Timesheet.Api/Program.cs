@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Timesheet.Api.Data;
+using Timesheet.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors();
+
+app.MapTimeEntryEndpoints();
 
 var summaries = new[]
 {
