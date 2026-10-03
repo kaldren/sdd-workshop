@@ -1,6 +1,6 @@
 # Timesheet — project rules
 
-<!-- Защо: този файл се зарежда автоматично във всяка AI сесия. Това е „конституцията“ на проекта — правила, които важат винаги, без да ги повтаряме в промпта. -->
+<!-- Защо: GitHub Copilot (и други AI агенти) зарежда този файл автоматично във всеки чат. Това е „конституцията“ на проекта — правила, които важат винаги, без да ги повтаряме в промпта. -->
 
 ## Project
 
@@ -32,8 +32,9 @@ Timesheet POC: users log the hours they spend on projects.
 | --- | --- |
 | `specs/NNN-*.md` | **What** we build (`specs/template.md` is the template, not a spec) |
 | `DESIGN.md` | **How it looks** — the design system for every UI change |
-| `.claude/agents/` | **Who** does the work — `@spec-agent` (idea → spec), `backend-agent`, `frontend-agent` |
-| `.claude/skills/` | **How** we work — `/implement` (spec → code) |
+| `.github/agents/` | **Who** does the work — `spec-agent` (idea → spec), `backend-agent`, `frontend-agent` |
+| `.github/prompts/` | **How** we work — `/implement` (spec → code) |
+| `.github/instructions/` | Rules for specific folders, e.g. UI rules for `src/Timesheet.Web` |
 
 ## Conventions
 

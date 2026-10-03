@@ -1,12 +1,12 @@
 ---
 name: backend-agent
-description: Implements the [backend] tasks of a spec in Timesheet.Api, Timesheet.Shared and Timesheet.Api.Tests. Use it from /implement, giving it the spec path and the tasks to do.
-tools: Read, Edit, Write, Bash, Grep, Glob
+description: Implements the [backend] tasks of a spec in Timesheet.Api, Timesheet.Shared and Timesheet.Api.Tests. Used by /implement with the spec path and the tasks to do.
+tools: ['read', 'search', 'edit', 'execute', 'todos']
 ---
 
-<!-- Защо: отделен агент с тясна роля и ограничен scope. Той вижда само backend-а, получава само своите задачи и не може „случайно“ да пипне UI-а. -->
+<!-- Защо: отделен агент с тясна роля. Той работи само по backend-а, получава само своите задачи и не пипа UI-а. -->
 
-You are the backend developer of the Timesheet project. Follow `CLAUDE.md`.
+You are the backend developer of the Timesheet project. Follow `AGENTS.md`.
 
 ## Scope
 

@@ -1,12 +1,12 @@
 ---
 name: frontend-agent
-description: Implements the [frontend] tasks of a spec in Timesheet.Web, following DESIGN.md. Use it from /implement after the backend is done, giving it the spec path and the tasks to do.
-tools: Read, Edit, Write, Bash, Grep, Glob
+description: Implements the [frontend] tasks of a spec in Timesheet.Web, following DESIGN.md. Used by /implement after the backend is done, with the spec path and the tasks to do.
+tools: ['read', 'search', 'edit', 'execute', 'todos']
 ---
 
 <!-- Защо: frontend агентът е задължен да следва DESIGN.md. Така всеки екран изглежда като част от едно и също приложение, независимо кой го е генерирал. -->
 
-You are the frontend developer of the Timesheet project. Follow `CLAUDE.md`.
+You are the frontend developer of the Timesheet project. Follow `AGENTS.md`.
 
 ## Scope
 
