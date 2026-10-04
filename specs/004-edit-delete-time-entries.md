@@ -1,6 +1,6 @@
 # Edit and delete time entries
 
-**Status:** Draft
+**Status:** Implemented
 
 ## Goal
 
@@ -26,16 +26,16 @@ Let a user correct or remove a time entry they already created. Editing happens 
 
 ## Acceptance criteria
 
-- [ ] Given entries in the table, when the page is opened, then each row shows Edit and Delete actions (R1).
-- [ ] Given an entry, when the user clicks Edit, then a modal opens pre-filled with its current values (R2).
-- [ ] Given the edit modal with valid values, when the user saves, then the entry is updated, the modal closes and the table shows the new values (R3).
-- [ ] Given the edit modal with missing or invalid values, when the user saves, then validation errors are shown in the modal and nothing is saved (R3).
-- [ ] Given the edit modal with changed values, when the user cancels or closes it, then the entry is unchanged (R4).
-- [ ] Given an entry, when the user clicks Delete, then a confirmation pop-up shows the buttons "Yeah, I'm sure!" and "Don't do it!" (R5).
-- [ ] Given the confirmation pop-up, when the user clicks "Yeah, I'm sure!", then the entry is deleted and removed from the table (R6).
-- [ ] Given the confirmation pop-up, when the user clicks "Don't do it!", then the pop-up closes and the entry remains (R6).
-- [ ] Given an entry id that does not exist, when PUT or DELETE is called, then the API returns 404 and the UI shows an error message (R7).
-- [ ] Given an API failure, when the user saves an edit or confirms a delete, then an error alert is shown and the table is unchanged (R8).
+- [x] Given entries in the table, when the page is opened, then each row shows Edit and Delete actions (R1).
+- [x] Given an entry, when the user clicks Edit, then a modal opens pre-filled with its current values (R2).
+- [x] Given the edit modal with valid values, when the user saves, then the entry is updated, the modal closes and the table shows the new values (R3).
+- [x] Given the edit modal with missing or invalid values, when the user saves, then validation errors are shown in the modal and nothing is saved (R3).
+- [x] Given the edit modal with changed values, when the user cancels or closes it, then the entry is unchanged (R4).
+- [x] Given an entry, when the user clicks Delete, then a confirmation pop-up shows the buttons "Yeah, I'm sure!" and "Don't do it!" (R5).
+- [x] Given the confirmation pop-up, when the user clicks "Yeah, I'm sure!", then the entry is deleted and removed from the table (R6).
+- [x] Given the confirmation pop-up, when the user clicks "Don't do it!", then the pop-up closes and the entry remains (R6).
+- [x] Given an entry id that does not exist, when PUT or DELETE is called, then the API returns 404 and the UI shows an error message (R7).
+- [x] Given an API failure, when the user saves an edit or confirms a delete, then an error alert is shown and the table is unchanged (R8).
 
 ## Technical notes
 
@@ -47,10 +47,10 @@ Let a user correct or remove a time entry they already created. Editing happens 
 
 ## Tasks
 
-- [ ] [backend] Add `UpdateTimeEntryRequest` to `Timesheet.Shared` (R3).
-- [ ] [backend] Add and test `PUT /api/time-entries/{id}` with validation and 404 handling (R3, R7).
-- [ ] [backend] Add and test `DELETE /api/time-entries/{id}` with 404 handling (R6, R7).
-- [ ] [frontend] Add Edit and Delete actions to each table row (R1).
-- [ ] [frontend] Add the edit modal with pre-filled form, validation and cancel (R2, R3, R4).
-- [ ] [frontend] Add the delete confirmation modal with "Yeah, I'm sure!" and "Don't do it!" buttons (R5, R6).
-- [ ] [frontend] Show error alerts for failed or 404 update and delete requests (R7, R8).
+- [x] [backend] Add `UpdateTimeEntryRequest` to `Timesheet.Shared` (R3).
+- [x] [backend] Add and test `PUT /api/time-entries/{id}` with validation and 404 handling (R3, R7).
+- [x] [backend] Add and test `DELETE /api/time-entries/{id}` with 404 handling (R6, R7).
+- [x] [frontend] Add Edit and Delete actions to each table row (R1).
+- [x] [frontend] Add the edit modal with pre-filled form, validation and cancel (R2, R3, R4).
+- [x] [frontend] Add the delete confirmation modal with "Yeah, I'm sure!" and "Don't do it!" buttons (R5, R6).
+- [x] [frontend] Show error alerts for failed or 404 update and delete requests (R7, R8).

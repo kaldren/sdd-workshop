@@ -13,6 +13,8 @@ public static class TimeEntryEndpoints
 
         group.MapGet("", GetTimeEntries);
         group.MapPost("", CreateTimeEntry);
+        group.MapPut("/{id:int}", UpdateTimeEntry);
+        group.MapDelete("/{id:int}", DeleteTimeEntry);
 
         return app;
     }
@@ -40,23 +42,7 @@ public static class TimeEntryEndpoints
         TimesheetDbContext db,
         CancellationToken cancellationToken = default)
     {
-        var errors = new Dictionary<string, string[]>();
-
-        if (request.Date is null)
-        {
-            errors[nameof(request.Date)] = ["Date is required."];
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Project))
-        {
-            errors[nameof(request.Project)] = ["Project is required."];
-        }
-
-        if (request.Hours is null or <= 0 or > 24)
-        {
-            errors[nameof(request.Hours)] = ["Hours must be greater than 0 and no more than 24."];
-        }
-
+        var errors = ValidateTimeEntry(request.Date, request.Project, request.Hours);
         if (errors.Count > 0)
         {
             return Results.ValidationProblem(errors);
@@ -81,5 +67,80 @@ public static class TimeEntryEndpoints
             entry.Description);
 
         return TypedResults.Created("/api/time-entries", response);
+    }
+
+    public static async Task<IResult> UpdateTimeEntry(
+        int id,
+        UpdateTimeEntryRequest request,
+        TimesheetDbContext db,
+        CancellationToken cancellationToken = default)
+    {
+        var entry = await db.TimeEntries.FindAsync([id], cancellationToken);
+        if (entry is null)
+        {
+            return Results.NotFound();
+        }
+
+        var errors = ValidateTimeEntry(request.Date, request.Project, request.Hours);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        entry.Date = request.Date!.Value;
+        entry.Project = request.Project!.Trim();
+        entry.Hours = request.Hours!.Value;
+        entry.Description = request.Description;
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        return Results.Ok(new TimeEntryResponse(
+            entry.Id,
+            entry.Date,
+            entry.Project,
+            entry.Hours,
+            entry.Description));
+    }
+
+    public static async Task<IResult> DeleteTimeEntry(
+        int id,
+        TimesheetDbContext db,
+        CancellationToken cancellationToken = default)
+    {
+        var entry = await db.TimeEntries.FindAsync([id], cancellationToken);
+        if (entry is null)
+        {
+            return Results.NotFound();
+        }
+
+        db.TimeEntries.Remove(entry);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return Results.NoContent();
+    }
+
+    private static Dictionary<string, string[]> ValidateTimeEntry(
+        DateOnly? date,
+        string? project,
+        decimal? hours)
+    {
+        var errors = new Dictionary<string, string[]>();
+
+        if (date is null)
+        {
+            errors[nameof(CreateTimeEntryRequest.Date)] = ["Date is required."];
+        }
+
+        if (string.IsNullOrWhiteSpace(project))
+        {
+            errors[nameof(CreateTimeEntryRequest.Project)] = ["Project is required."];
+        }
+
+        if (hours is null or <= 0 or > 24)
+        {
+            errors[nameof(CreateTimeEntryRequest.Hours)] = ["Hours must be greater than 0 and no more than 24."];
+        }
+
+        return errors;
     }
 }

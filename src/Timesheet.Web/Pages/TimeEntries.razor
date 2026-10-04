@@ -10,6 +10,11 @@
 <h1>Time entries</h1>
 <p>Record the time you spend on a project and review your entries.</p>
 
+@if (!string.IsNullOrEmpty(actionError))
+{
+    <div class="alert alert-danger" role="alert">@actionError</div>
+}
+
 <section class="card shadow-sm mb-4" aria-labelledby="create-entry-heading">
     <div class="card-body">
         <h2 id="create-entry-heading" class="card-title">Add a time entry</h2>
@@ -94,6 +99,7 @@
                             <th scope="col">Project</th>
                             <th scope="col" class="text-end">Hours</th>
                             <th scope="col">Description</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -104,6 +110,20 @@
                                 <td>@entry.Project</td>
                                 <td class="text-end tabular-numbers">@entry.Hours.ToString("0.##")</td>
                                 <td>@entry.Description</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                @onclick="() => OpenEditModal(entry)">
+                                            Edit
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                @onclick="() => OpenDeleteModal(entry)">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -113,15 +133,122 @@
     }
 </section>
 
+@if (isEditModalOpen && editForm is not null && editEditContext is not null)
+{
+    <div class="modal-backdrop fade show" @onclick="CancelEdit"></div>
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="edit-entry-heading" @onclick="CancelEdit">
+        <div class="modal-dialog modal-dialog-centered" role="document" @onclick:stopPropagation="true">
+            <div class="modal-content">
+                <EditForm EditContext="@editEditContext" OnValidSubmit="SaveEditAsync">
+                    <DataAnnotationsValidator />
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="edit-entry-heading">Edit time entry</h2>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="CancelEdit"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (!string.IsNullOrEmpty(actionError))
+                        {
+                            <div class="alert alert-danger" role="alert">@actionError</div>
+                        }
+                        @if (!string.IsNullOrEmpty(editError))
+                        {
+                            <div class="alert alert-danger" role="alert">@editError</div>
+                        }
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="edit-entry-date" class="form-label">Date *</label>
+                                <InputDate id="edit-entry-date" class="form-control" @bind-Value="editForm.Date" />
+                                <ValidationMessage For="@(() => editForm.Date)" class="invalid-feedback d-block" />
+                            </div>
+                            <div class="col-12">
+                                <label for="edit-entry-project" class="form-label">Project *</label>
+                                <InputText id="edit-entry-project" class="form-control" @bind-Value="editForm.Project" />
+                                <ValidationMessage For="@(() => editForm.Project)" class="invalid-feedback d-block" />
+                            </div>
+                            <div class="col-12">
+                                <label for="edit-entry-hours" class="form-label">Hours *</label>
+                                <InputNumber id="edit-entry-hours" class="form-control" @bind-Value="editForm.Hours" min="0" max="24" step="any" />
+                                <ValidationMessage For="@(() => editForm.Hours)" class="invalid-feedback d-block" />
+                            </div>
+                            <div class="col-12">
+                                <label for="edit-entry-description" class="form-label">Description</label>
+                                <InputTextArea id="edit-entry-description" class="form-control" @bind-Value="editForm.Description" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-primary" @onclick="CancelEdit" disabled="@isUpdating">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isUpdating">
+                            @if (isUpdating)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                                <span>Saving...</span>
+                            }
+                            else
+                            {
+                                <span>Save changes</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (isDeleteModalOpen && deleteTarget is not null)
+{
+    <div class="modal-backdrop fade show" @onclick="CancelDelete"></div>
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="delete-entry-heading" @onclick="CancelDelete">
+        <div class="modal-dialog modal-dialog-centered" role="document" @onclick:stopPropagation="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="delete-entry-heading">Delete time entry</h2>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CancelDelete"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(actionError))
+                    {
+                        <div class="alert alert-danger" role="alert">@actionError</div>
+                    }
+                    <p class="mb-0">Are you sure you want to delete the time entry for @deleteTarget.Project on @deleteTarget.Date.ToString("yyyy-MM-dd")?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" @onclick="CancelDelete" disabled="@isDeleting">Don't do it!</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeleteEntryAsync" disabled="@isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                        }
+                        <span>Yeah, I'm sure!</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<TimeEntryResponse>? entries;
     private TimeEntryForm form = new();
     private EditContext editContext = default!;
     private ValidationMessageStore serverValidationMessages = default!;
+    private TimeEntryResponse? editTarget;
+    private TimeEntryForm? editForm;
+    private EditContext? editEditContext;
+    private ValidationMessageStore? editServerValidationMessages;
+    private TimeEntryResponse? deleteTarget;
     private bool isLoading = true;
     private bool isSubmitting;
+    private bool isEditModalOpen;
+    private bool isDeleteModalOpen;
+    private bool isUpdating;
+    private bool isDeleting;
     private string? loadError;
     private string? submitError;
+    private string? editError;
+    private string? actionError;
 
     protected override async Task OnInitializedAsync()
     {
@@ -171,7 +298,7 @@
             using var response = await Http.PostAsJsonAsync("api/time-entries", request);
             if (response.StatusCode == HttpStatusCode.BadRequest)
             {
-                await ReadValidationErrorsAsync(response);
+                await ReadValidationErrorsAsync(response, editContext, form, error => submitError = error, serverValidationMessages);
                 return;
             }
 
@@ -200,7 +327,12 @@
         }
     }
 
-    private async Task ReadValidationErrorsAsync(HttpResponseMessage response)
+    private async Task ReadValidationErrorsAsync(
+        HttpResponseMessage response,
+        EditContext targetContext,
+        TimeEntryForm targetForm,
+        Action<string> setError,
+        ValidationMessageStore targetValidationMessages)
     {
         try
         {
@@ -210,7 +342,7 @@
             if (!document.RootElement.TryGetProperty("errors", out var errors)
                 || errors.ValueKind != JsonValueKind.Object)
             {
-                submitError = "The time entry was rejected. Please check the values and try again.";
+                setError("The time entry was rejected. Please check the values and try again.");
                 return;
             }
 
@@ -234,7 +366,7 @@
                 {
                     if (message.ValueKind == JsonValueKind.String && message.GetString() is { } text)
                     {
-                        serverValidationMessages.Add(new FieldIdentifier(form, field), text);
+                        targetValidationMessages.Add(new FieldIdentifier(targetForm, field), text);
                         foundFieldError = true;
                     }
                 }
@@ -242,14 +374,179 @@
 
             if (!foundFieldError)
             {
-                submitError = "The time entry was rejected. Please check the values and try again.";
+                setError("The time entry was rejected. Please check the values and try again.");
             }
 
-            editContext.NotifyValidationStateChanged();
+            targetContext.NotifyValidationStateChanged();
         }
         catch (JsonException)
         {
-            submitError = "The time entry was rejected. Please check the values and try again.";
+            setError("The time entry was rejected. Please check the values and try again.");
+        }
+    }
+
+    private void OpenEditModal(TimeEntryResponse entry)
+    {
+        actionError = null;
+        editTarget = entry;
+        editForm = new TimeEntryForm
+        {
+            Date = entry.Date,
+            Project = entry.Project,
+            Hours = entry.Hours,
+            Description = entry.Description
+        };
+        editEditContext = new EditContext(editForm);
+        editServerValidationMessages = new ValidationMessageStore(editEditContext);
+        editEditContext.OnFieldChanged += ClearEditServerValidationForField;
+        editError = null;
+        isEditModalOpen = true;
+    }
+
+    private async Task SaveEditAsync()
+    {
+        if (editTarget is null || editForm is null || editEditContext is null || editServerValidationMessages is null)
+        {
+            return;
+        }
+
+        isUpdating = true;
+        actionError = null;
+        editError = null;
+        editServerValidationMessages.Clear();
+        editEditContext.NotifyValidationStateChanged();
+
+        try
+        {
+            var request = new UpdateTimeEntryRequest(
+                editForm.Date,
+                string.IsNullOrWhiteSpace(editForm.Project) ? null : editForm.Project.Trim(),
+                editForm.Hours,
+                string.IsNullOrWhiteSpace(editForm.Description) ? null : editForm.Description.Trim());
+
+            using var response = await Http.PutAsJsonAsync($"api/time-entries/{editTarget.Id}", request);
+            if (response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                await ReadValidationErrorsAsync(
+                    response,
+                    editEditContext,
+                    editForm,
+                    error => editError = error,
+                    editServerValidationMessages);
+                return;
+            }
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                actionError = "This time entry no longer exists. Refresh the page and try again.";
+                return;
+            }
+
+            response.EnsureSuccessStatusCode();
+            var updatedEntry = await response.Content.ReadFromJsonAsync<TimeEntryResponse>()
+                ?? throw new JsonException("The updated time entry response was empty.");
+
+            if (entries is not null)
+            {
+                var index = entries.FindIndex(entry => entry.Id == updatedEntry.Id);
+                if (index >= 0)
+                {
+                    entries[index] = updatedEntry;
+                    entries = entries.OrderBy(entry => entry.Date).ThenBy(entry => entry.Id).ToList();
+                }
+            }
+
+            isEditModalOpen = false;
+            editTarget = null;
+        }
+        catch (HttpRequestException)
+        {
+            actionError = "The time entry could not be updated. Please try again.";
+        }
+        catch (OperationCanceledException)
+        {
+            actionError = "The time entry could not be updated. Please try again.";
+        }
+        catch (JsonException)
+        {
+            actionError = "The server response could not be read. The time entry was not updated.";
+        }
+        finally
+        {
+            isUpdating = false;
+        }
+    }
+
+    private void ClearEditServerValidationForField(object? sender, FieldChangedEventArgs args)
+    {
+        editServerValidationMessages?.Clear(args.FieldIdentifier);
+        editError = null;
+        editEditContext?.NotifyValidationStateChanged();
+    }
+
+    private void CancelEdit()
+    {
+        if (!isUpdating)
+        {
+            isEditModalOpen = false;
+            editTarget = null;
+            editForm = null;
+            editEditContext = null;
+            editServerValidationMessages = null;
+        }
+    }
+
+    private void OpenDeleteModal(TimeEntryResponse entry)
+    {
+        actionError = null;
+        deleteTarget = entry;
+        isDeleteModalOpen = true;
+    }
+
+    private async Task DeleteEntryAsync()
+    {
+        if (deleteTarget is null)
+        {
+            return;
+        }
+
+        isDeleting = true;
+        actionError = null;
+
+        try
+        {
+            using var response = await Http.DeleteAsync($"api/time-entries/{deleteTarget.Id}");
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                actionError = "This time entry no longer exists. Refresh the page and try again.";
+                return;
+            }
+
+            response.EnsureSuccessStatusCode();
+            entries?.RemoveAll(entry => entry.Id == deleteTarget.Id);
+            isDeleteModalOpen = false;
+            deleteTarget = null;
+        }
+        catch (HttpRequestException)
+        {
+            actionError = "The time entry could not be deleted. Please try again.";
+        }
+        catch (OperationCanceledException)
+        {
+            actionError = "The time entry could not be deleted. Please try again.";
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+
+    private void CancelDelete()
+    {
+        if (!isDeleting)
+        {
+            isDeleteModalOpen = false;
+            deleteTarget = null;
         }
     }
 
